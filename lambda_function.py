@@ -8,7 +8,7 @@ import time
 
 bucket_name = 'imagenet-sample'
 model_name = 'efficientnetb1'
-model_path = '/var/task/lambda-ensemble/model/' + model_name
+model_path = '/var/task/lambda-ensemble-efficientnet/model/' + model_name
 model = load_model(model_path, compile=True)
 
 s3 = boto3.resource('s3')
