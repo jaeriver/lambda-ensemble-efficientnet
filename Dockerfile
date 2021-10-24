@@ -14,7 +14,6 @@ RUN pip install -r lambda-ensemble-efficientnet/requirements.txt
 
 # move lambdafunc.py
 RUN cp lambda-ensemble-efficientnet/lambda_function.py /var/task/
-RUN cp lambda-ensemble-efficientnet/imagenet_class_index.json /var/task/
 
 
 CMD ["lambda_function.lambda_handler"]
