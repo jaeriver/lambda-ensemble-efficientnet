@@ -7,16 +7,28 @@ from tensorflow.keras.models import load_model
 import time
 
 bucket_name = 'imagenet-sample'
+bucket_ensemble = 'lambda-ensemble'
 model_name = 'efficientnetb1'
-model_path = '/var/task/lambda-ensemble-efficientnet/model/' + model_name
+model_path = '/var/task/lambda-ensemble/model/' + model_name
 model = load_model(model_path, compile=True)
 
 s3 = boto3.resource('s3')
+s3_client = boto3.client('s3')
 
 table_name = 'lambda-ensemble1'
 region_name = 'us-west-2'
 dynamodb = boto3.resource('dynamodb', region_name=region_name)
 table = dynamodb.Table(table_name)
+
+
+def upload_s3(case_num, acc):
+    item_dict = dict([(str(i), str(acc[i])) for i in range(len(acc))])
+    s3_client.put_object(
+        Body=json.dumps(item_dict),
+        Bucket=bucket_name,
+        Key=model_name + '_' + case_num + '.txt'
+    )
+    return True
 
 
 def upload_dynamodb(case_num, acc):
@@ -42,7 +54,7 @@ def filenames_to_input(file_list, batchsize):
     imgs = []
     for i in range(batchsize):
         img = read_image_from_s3(file_list[i])
-        img = img.resize((240, 240), Image.ANTIALIAS)
+        img = img.resize((224, 224), Image.ANTIALIAS)
         img = np.array(img)
 
         # batchsize, 224, 224, 3
@@ -73,7 +85,7 @@ def lambda_handler(event, context):
 
     total_start = time.time()
     result, pred_time = inference_model(batch_imgs)
-    upload_dynamodb(case_num, result)
+    upload_s3(case_num, result)
     total_time = time.time() - total_start
 
     return {
