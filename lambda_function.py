@@ -50,11 +50,11 @@ def read_image_from_s3(filename):
     return img
 
 
-def filenames_to_input(file_list, batchsize):
+def filenames_to_input(file_list):
     imgs = []
-    for i in range(batchsize):
-        img = read_image_from_s3(file_list[i])
-        img = img.resize((240, 240), Image.ANTIALIAS)
+    for file in file_list:
+        img = read_image_from_s3(file)
+        img = img.resize((224, 224), Image.ANTIALIAS)
         img = np.array(img)
 
         # batchsize, 224, 224, 3
@@ -81,7 +81,7 @@ def lambda_handler(event, context):
     file_list = event['file_list']
     batch_size = event['batch_size']
     case_num = event['case_num']
-    batch_imgs = filenames_to_input(file_list, batch_size)
+    batch_imgs = filenames_to_input(file_list)
 
     total_start = time.time()
     result, pred_time = inference_model(batch_imgs)
