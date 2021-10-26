@@ -54,18 +54,18 @@ def filenames_to_input(file_list):
     imgs = []
     for file in file_list:
         img = read_image_from_s3(file)
-        img = img.resize((240, 240), Image.ANTIALIAS)
+        img = img.resize((224, 224), Image.ANTIALIAS)
         img = np.array(img)
-
+        # if image is grayscale, convert to 3 channels
+        if len(img.shape) != 3:
+            img = np.repeat(img[..., np.newaxis], 3, -1)
         # batchsize, 224, 224, 3
-        print(img)
         img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
         img = preprocess_input(img)
         imgs.append(img)
 
     batch_imgs = np.vstack(imgs)
     return batch_imgs
-
 
 def inference_model(batch_imgs):
     pred_start = time.time()
